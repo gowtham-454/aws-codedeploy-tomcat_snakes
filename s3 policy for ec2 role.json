@@ -1,0 +1,18 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:Get*",
+                "s3:List*"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:s3:::BUCKET_NAME/*",
+                "arn:aws:s3:::aws-codedeploy-REGION/*"
+            ]
+        }
+    ]
+}
+
+this policy has to be attached to role which we attach to ec2, then ec2 can download revision files from the bucket.

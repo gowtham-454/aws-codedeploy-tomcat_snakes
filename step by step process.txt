@@ -1,0 +1,88 @@
+how to deploy tomcat snakes using aode deploy mnually:
+
+1. first download tomcat snakes bundle from aws-samples github repo: here is the clone link: https://github.com/aws-samples/eb-tomcat-snakes.git
+
+2. create an code commit repository in AWS code commit. and integrate its remote repo url with your local git bash terminal.(you need this to make changes   to the code from your local machine.)
+
+3. now add an appspec.yml file into the downloaded tomcat snakes folder (you need this file during code deploy process)
+
+4. push this code to code commit master branch (master for educational and testing purpose only--- generally we use branches for testing in organisations)
+
+5. now open codebuild in aws concole and create a build projet. Source will be your codecommit repo and mention branch which you pushed code to.
+
+6. environment : managed image - OS: Amazonlinux2 - Runtime:Standard - image: standard 4.0 - image version : always use latest - environment type: linux Ec2
+
+7. additional configs : select vpc and select private subnets ( you need a NAT gateway and a route table with these subnets attached with NAT gateway for    the subnets reaching internet) and security group.
+
+8. we need a buildspec file to instruct what to do and what files do we need to push to s3 bucket.
+
+9. Artifacts: type: s3 - Bucket name: create a bucket - name: name of the file or folder to be generated. and artifatcs packaging : zip ( we need this zip     format with ROOT.war and appspec.yml file during codedeploy process). and disable artifact encryption. cloud watch logs - ur wish --create build project.
+
+10. build project - you can see a zip file in your s3 bucket (it contains ROOT.war and appspec.yml files) we need it during codedeploy process.
+
+==========================================================================================================================================================
+
+codedeploy process:
+
+1. go to AWS codedeploy console and click on create application. select compute platform: EC2/onprem and create.
+
+2. create deployment group you need a service role for this deployment: it gives permission to code deploy service to read ec2 tags and some other aws      services which are a part of codedeploy process.
+
+3. to create a service role go to IAM and roles and click on create role - choose AWS service and usecase = codedeploy and choose codedeploy as we are using    it for ec2 and then create role. use this in 2nd step during creation of deployment group.
+
+4. deploment type : In-Place and environent cinfiguration : Amazon Ec2 instances. and give a key and value ( we need    these during EC2 creation) based on these value codedeploy deploys the application on those instances which are having these tags.
+
+5.agent configuration with AWS systems manager : never ( we installs it manually in Ec2) disable loadbalancing. create deployment group.
+
+============================================================================================================================================================
+
+
+now we need an EC2 instance in which we deploys and tests our app through codedeploy.
+
+we need an IAM instance profile (role) to attach with this EC2 instance so we creates it first.
+
+1. go to IAM and create policy and use the following json to create a policy 
+  
+   {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:Get*",
+                "s3:List*"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:s3:::BUCKET_NAME/*",
+                "arn:aws:s3:::aws-codedeploy-REGION/*"
+            ]
+        }
+    ]
+  }
+
+  replace BUCKET-NAME with your bucketname where you are sending zipped file from codebuild and REGION with region of the bucket.
+
+  save the policy
+
+  go to roles and create a role - AWS service - usecase: EC2 - name it as "role for EC2" and attach the policy which we have crete before this   step.
+  
+  for us this permission is enough as we are planning to install codedeploy agent manually.
+
+  if you want to install it automatically then you need to add another policy "AmazonSSMManagedInstanceCore" and then create 
+
+  now go to EC2 and create an instace with linux and attach this "role for EC2" to it and also add tags which we used during deployment group creation.
+
+2. now we need to install some environments in this instance so loginto it and follow the EC2 prerequisites file from my repo.
+
+3. once you installed them you can peocedd to create deployment from the deployment group.
+
+4. revision type: amazon s3 and revision locatio: s3 object url (path of the zip file which generating from codebuild) revision type: .zip create deployment. now your application will be deployed into ec2 instance.
+
+
+i have provided the buildspec and appspec.yml files in this repo browse them.
+
+
+refer for documentation : https://docs.aws.amazon.com/codedeploy/
+
+
+

@@ -1,0 +1,29 @@
+installing java:
+
+sudo yum install java-1.8.0 -y
+yum update
+yum install tomcat9 tomcat9-webapps -y
+sudo service tomcat9 start
+========================================
+find / -name webapps
+
+copy the path /var/lib/tomcat9/webapps
+
+we need this path in appspec file at destination field.
+===============================================
+installing codedeploy agent:
+reference AWS documentation - https://docs.aws.amazon.com/codedeploy/latest/userguide/codedeploy-agent-operations-install-linux.html
+
+sudo yum update -y
+sudo yum install ruby -y
+sudo yum install wget -y
+cd /home/ec2-user
+wget https://aws-codedeploy-us-east-1.s3.us-east-1.amazonaws.com/latest/install
+
+[wget https://bucket-name.s3.region-identifier.amazonaws.com/latest/install
+based on region we are working we need to change bucket-name and region-identifier]
+
+chmod +x ./install
+sudo ./install auto
+sudo service codedeploy-agent start
+sudo service codedeploy-agent status

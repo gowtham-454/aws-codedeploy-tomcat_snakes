@@ -1,0 +1,18 @@
+#for linux machine
+---
+artifacts:
+  files:
+    - ROOT.war
+    - appspec.yml
+discard-paths: true
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+    commands:
+      - "sudo yum install git -y"
+      - "chmod 700 build.sh"
+      - "sh build.sh"
+version: 0.2
+
+#use this code in codebuild buildspec code area, dont use this file as it is a .txt file ( use the above code) 
