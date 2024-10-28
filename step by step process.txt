@@ -1,4 +1,6 @@
-how to deploy tomcat snakes using aode deploy mnually:
+how to deploy tomcat snakes using aode deploy mnually: 
+
+steps:
 
 1. first download tomcat snakes bundle from aws-samples github repo: here is the clone link: https://github.com/aws-samples/eb-tomcat-snakes.git
 
